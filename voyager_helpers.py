@@ -11,7 +11,7 @@ def get_list_from_regex(regex, items):
     """ Returns a list of matches or NONE based on regex example: get_list_from_regex("Voyager:\w+", all_images_list"""
     import re
     r = re.compile(regex)
-    return [m.group() if m else None for item in all_images for m in [r.search(str(item))]]
+    return [m.group() if m else None for item in items for m in [r.search(str(item))]]
 
 def filter_by_list(source, filter_list):
     """grab things that are in the filter list via set list"""
@@ -35,7 +35,7 @@ def get_all_files(directory):
 
     return [join(directory, f) for f in listdir(directory) if isfile(join(directory, f))]
 
-def filter_all_collections(all_images, headers, list_of_public_collections, outputdir):
+def filter_all_collections(all_images, headers, inputdir, outputdir):
     """ This takes a set of images data and filters out all public collections 
     the inputs are a list of all images, a list of public collections text files which contain pids
     and a list of headers
@@ -46,7 +46,7 @@ def filter_all_collections(all_images, headers, list_of_public_collections, outp
 
     """ 
     from os.path import join, basename
-    
+    list_of_public_collections = get_all_files(inputdir)
     # copy the list 
     filtered_images = [item for item in all_images]
     for c in list_of_public_collections:
