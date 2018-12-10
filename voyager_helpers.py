@@ -43,6 +43,7 @@ def filter_all_collections(all_images, headers, inputdir, outputdir):
     all_images = list of lists
     headers = list 
     list_of_public_collections
+    DEPRECATED::: USE pd_filter_all_collections
 
     """ 
     from os.path import join, basename
@@ -55,6 +56,24 @@ def filter_all_collections(all_images, headers, inputdir, outputdir):
         filtered_images = filter_by_not_in_list(filtered_images, filtered_ids)
         save_csv(headers, items, join(outputdir, basename(c)+"filtered.csv"))
     save_csv(headers, filtered_images, join(outputdir, 'not_in_lists.csv'))
+
+def pd_filter_all_collections(data_frame, column, inputdir, outputdir):
+    """ use  pandas to filter out all collections"""
+    from os.path import join, basename
+
+    list_of_public_collections = get_all_files(inputdir)
+    df = data_frame
+    for c in list_of_public_collections:
+        filtered_ids = get_text_file(c)
+        items_df = df[df[column].isin(filtered_ids)]
+
+        df = df[~df[column].isin(filtered_ids)]
+        items_df = items_df.dropna(axis='columns', how='all')
+        items_df.sort_index(axis = 1, inplace = True)
+        items_df.to_csv(join(outputdir, basename(c)+'filtered.csv'), encoding= "utf-8")
+    df = df.dropna(axis='columns', how='all')
+    df.sort_index(axis = 1, inplace = true)
+    df.to_csv(join(outputdir, 'not_in_lists.csv'), encoding = "utf-8")
 
 def remove_empty_columns(inputdir, outputdir):
     """takes an input directory of csv, uses the first row as headers, iterates through it and aggressively
@@ -99,7 +118,7 @@ def pd_remove_empty_columns(inputdir, outputdir):
         filtered_data = data.dropna(axis='columns', how='all')
         filtered_data.to_csv(join(outputdir, basename(path)), encoding='utf-8')
 
-def get_rows_from_regex_column(inputdir, output_file, regex_filter):
+def get_unique_values_from_column(inputdir, output_file, regex_filter):
     """Gets the row index for a regex, then collects
     all the data from the row.
     get the data in to pandas 
@@ -114,9 +133,10 @@ def get_rows_from_regex_column(inputdir, output_file, regex_filter):
     """ 
 
     import pandas
+    
     csv_paths = get_all_files(inputdir)
     #empty set of values
-    values = [] 
+    values = []
     for path in csv_paths:
         print path
         df = pandas.read_csv(path)
@@ -125,5 +145,9 @@ def get_rows_from_regex_column(inputdir, output_file, regex_filter):
         # filter out the nan values, kind of a pain, but I couldn't drop them in panda without
         # dropping whole rows. 
         values = values+[item for item in filtered if str(item) != 'nan']#list(filtered)
+    values = list(set(values)) 
+    with open(output_file, 'wb') as f:
+        f.write("\n".join(values))
+
     return list(set(values)) # list(set(values))
 
