@@ -117,7 +117,8 @@ def pd_remove_empty_columns(inputdir, outputdir):
 
 
 def get_unique_values_from_column(inputdir, outputfile, regex_filter):
-    """Gets the row index for a regex, then collects
+    """
+    Gets the row index for a regex, then collects
     all the data from the row.
     get the data in to pandas 
     WIP to work on this more Monday. 
@@ -143,6 +144,9 @@ def get_unique_values_from_column(inputdir, outputfile, regex_filter):
         # filter out the nan values, kind of a pain, but I couldn't drop them in panda without
         # dropping whole rows. 
         values = values+[item for item in filtered if unicode(item) != 'nan']#list(filtered)
+    # Split on ';' to get all the diplay values. This is a verification that the data made it in. 
+    # turned it into unicode becuase there's some floats in there
+    values = [s for v in values for s in unicode(v).split(';')]
     values = list(set(values)) 
     pandas.Series(values).to_csv(outputfile, encoding = 'utf-8')
     return values
